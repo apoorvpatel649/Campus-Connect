@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Campus Connect – Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-body">
+
+  <!-- MAIN AUTH CARD -->
+  <div class="auth-card">
+
+    <!-- Logo / Heading -->
+    <div class="auth-header">
+      <div class="auth-logo">🎓</div>
+      <h1>Campus Connect</h1>
+      <p>Bringing Students Together Through Events</p>
+    </div>
+
+    <!-- TAB BUTTONS (Login / Register) -->
+    <div class="tab-buttons">
+      <button class="tab-btn active" id="loginTab" onclick="showTab('login')">Login</button>
+      <button class="tab-btn" id="registerTab" onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- ===== LOGIN FORM ===== -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" />
+      </div>
+      <!-- This div shows error/success messages -->
+      <div id="loginMsg" class="msg-box"></div>
+      <button class="btn-primary full-width" onclick="loginUser()">Login →</button>
+    </div>
+
+    <!-- ===== REGISTER FORM (hidden by default) ===== -->
+    <div id="registerForm" style="display:none;">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Create a password" />
+      </div>
+      <div id="registerMsg" class="msg-box"></div>
+      <button class="btn-primary full-width" onclick="registerUser()">Create Account →</button>
+    </div>
+
+  </div><!-- end auth-card -->
+
+  <script>
+    // -----------------------------------------------
+    // STEP 3: localStorage Authentication Logic
+    // -----------------------------------------------
+
+    // Switch between Login and Register tabs
+    function showTab(tab) {
+      // Hide both forms first
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+
+      // Remove 'active' from both tab buttons
+      document.getElementById('loginTab').classList.remove('active');
+      document.getElementById('registerTab').classList.remove('active');
+
+      // Show the correct form and mark tab as active
+      if (tab === 'login') {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('loginTab').classList.add('active');
+      } else {
+        document.getElementById('registerForm').style.display = 'block';
+        document.getElementById('registerTab').classList.add('active');
+      }
+    }
+
+    // REGISTER: Save new user to localStorage
+    function registerUser() {
+      // Get values from form fields
+      var name     = document.getElementById('regName').value.trim();
+      var email    = document.getElementById('regEmail').value.trim();
+      var password = document.getElementById('regPassword').value.trim();
+      var msgBox   = document.getElementById('registerMsg');
+
+      // Basic validation – make sure fields are not empty
+      if (!name || !email || !password) {
+        showMsg(msgBox, 'Please fill in all fields.', 'error');
+        return; // Stop here, don't proceed
+      }
+
+      // Get existing users from localStorage (or empty array if none)
+      // JSON.parse converts the stored text back into a JavaScript array
+      var users = JSON.parse(localStorage.getItem('users') || '[]');
+
+      // Check if email is already registered
+      var exists = users.find(function(u) { return u.email === email; });
+      if (exists) {
+        showMsg(msgBox, 'This email is already registered. Try logging in.', 'error');
+        return;
+      }
+
+      // Add the new user to the array
+      users.push({ name: name, email: email, password: password });
+
+      // Save updated array back to localStorage
+      // JSON.stringify converts the array into text for storage
+      localStorage.setItem('users', JSON.stringify(users));
+
+      showMsg(msgBox, 'Account created! You can now login.', 'success');
+
+      // Switch to login tab after 1.5 seconds
+      setTimeout(function() { showTab('login'); }, 1500);
+    }
+
+    // LOGIN: Check user credentials from localStorage
+    function loginUser() {
+      var email    = document.getElementById('loginEmail').value.trim();
+      var password = document.getElementById('loginPassword').value.trim();
+      var msgBox   = document.getElementById('loginMsg');
+
+      if (!email || !password) {
+        showMsg(msgBox, 'Please enter email and password.', 'error');
+        return;
+      }
+
+      // Get users array from localStorage
+      var users = JSON.parse(localStorage.getItem('users') || '[]');
+
+      // Find a user that matches both email AND password
+      var user = users.find(function(u) {
+        return u.email === email && u.password === password;
+      });
+
+      if (!user) {
+        showMsg(msgBox, 'Invalid email or password. Try again.', 'error');
+        return;
+      }
+
+      // Login successful!
+      // Save the logged-in user's info to localStorage
+      // We'll use this on other pages to show their name
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+
+      showMsg(msgBox, 'Login successful! Redirecting...', 'success');
+
+      // Redirect to dashboard after a short delay
+      setTimeout(function() {
+        window.location.href = 'dashboard.html';
+      }, 1000);
+    }
+
+    // Helper: Show a message (success or error) in a message box
+    function showMsg(element, text, type) {
+      element.textContent = text;
+      element.className = 'msg-box ' + type; // adds 'success' or 'error' class
+    }
+
+    // On page load: if user is already logged in, skip to dashboard
+    window.onload = function() {
+      if (localStorage.getItem('loggedInUser')) {
+        window.location.href = 'dashboard.html';
+      }
+    };
+  </script>
+<script src="script.js"></script>
+</body>
+</html>

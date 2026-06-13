@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Events – Campus Connect</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">🎓 Campus Connect </div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="events.html">Events</a></li>
+      <li><a href="myevents.html" class="active">My Events</a></li>
+      <li><a href="create-event.html">+ Create Event</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h2>My Registered Events</h2>
+      <p>All events you have signed up for.</p>
+    </div>
+
+    <!-- Empty state message (shown if nothing registered) -->
+    <div id="emptyMsg" class="empty-state" style="display:none;">
+      <div class="empty-icon">🎟️</div>
+      <h3>No events yet!</h3>
+      <p>You haven't registered for any events.</p>
+      <a href="events.html" class="btn-primary">Browse Events</a>
+    </div>
+
+    <div class="cards-grid" id="myEventsGrid"></div>
+  </div>
+
+  <script>
+    var user = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!user) window.location.href = 'index.html';
+
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'index.html';
+    }
+
+    function formatDate(dateStr) {
+      var d = new Date(dateStr);
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    // Load and display user's registered events
+    var myKey = 'myEvents_' + user.email;
+    var myEvts = JSON.parse(localStorage.getItem(myKey) || '[]');
+
+    if (myEvts.length === 0) {
+      // Show empty state
+      document.getElementById('emptyMsg').style.display = 'flex';
+    } else {
+      var grid = document.getElementById('myEventsGrid');
+
+      myEvts.forEach(function(event) {
+        var card = document.createElement('div');
+        card.className = 'card event-card registered-card';
+        card.innerHTML =
+          '<div class="event-dept-tag">' + event.dept + '</div>' +
+          '<div class="registered-badge">✅ Registered</div>' +
+          '<h3>' + event.title + '</h3>' +
+          '<div class="event-meta">' +
+            '<span>📅 ' + formatDate(event.date) + '</span>' +
+            '<span>📍 ' + event.location + '</span>' +
+          '</div>' +
+          '<p class="event-desc">' + event.description + '</p>' +
+          '<button class="btn-danger" onclick="cancelEvent(' + event.id + ')">Cancel Registration</button>';
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Cancel (remove) an event from user's list
+    function cancelEvent(eventId) {
+      if (!confirm('Cancel registration for this event?')) return;
+
+      var myKey = 'myEvents_' + user.email;
+      var myEvts = JSON.parse(localStorage.getItem(myKey) || '[]');
+
+      // Keep all events EXCEPT the one with this id
+      myEvts = myEvts.filter(function(e) { return e.id !== eventId; });
+
+      localStorage.setItem(myKey, JSON.stringify(myEvts));
+
+      // Reload the page to reflect changes
+      window.location.reload();
+    }
+  </script>
+<script src="script.js"></script>
+</body>
+</html>

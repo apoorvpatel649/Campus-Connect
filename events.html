@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Events – Campus Connect</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">🎓 Campus Connect</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="events.html" class="active">Events</a></li>
+      <li><a href="myevents.html">My Events</a></li>
+      <li><a href="create-event.html">+ Create Event</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h2>Upcoming Events</h2>
+      <p>Click "Register" on any event to save it to your list.</p>
+    </div>
+
+    <!-- Toast notification (pops up on register) -->
+    <div id="toast" class="toast">✅ Event registered successfully!</div>
+
+    <!-- Events will be injected here by JavaScript -->
+    <div class="cards-grid" id="eventsGrid">
+      <!-- Cards appear here -->
+    </div>
+  </div>
+
+  <script>
+    // Auth check
+    var user = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!user) window.location.href = 'index.html';
+
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'index.html';
+    }
+
+    // -----------------------------------------------
+    // DUMMY EVENTS – These load if no events exist yet
+    // -----------------------------------------------
+    var defaultEvents = [
+      {
+        id: 1,
+        title: "Tech Fest 2025",
+        date: "2025-08-15",
+        location: "Main Auditorium",
+        dept: "CSE",
+        description: "Annual technical festival with hackathons, coding contests, and robotics."
+      },
+      {
+        id: 2,
+        title: "Cultural Night",
+        date: "2025-08-22",
+        location: "Open Air Theatre",
+        dept: "All Departments",
+        description: "A celebration of art, dance, music, and drama performances by students."
+      },
+      {
+        id: 3,
+        title: "Workshop: Web Development",
+        date: "2025-09-05",
+        location: "Lab Block 3",
+        dept: "CSE / IT",
+        description: "Hands-on workshop covering HTML, CSS, JavaScript and building real projects."
+      },
+      {
+        id: 4,
+        title: "Sports Day",
+        date: "2025-09-10",
+        location: "College Ground",
+        dept: "All Students",
+        description: "Inter-department sports competition: cricket, football, badminton, and athletics."
+      },
+      {
+        id: 5,
+        title: "Career Fair 2025",
+        date: "2025-09-20",
+        location: "Conference Hall",
+        dept: "Final Year",
+        description: "Meet top recruiters from IT, finance, and core engineering companies."
+      }
+    ];
+
+    // Load events: use localStorage if available, else use defaults
+    var storedEvents = JSON.parse(localStorage.getItem('events') || '[]');
+    if (storedEvents.length === 0) {
+      // First time: save default events to localStorage
+      localStorage.setItem('events', JSON.stringify(defaultEvents));
+      storedEvents = defaultEvents;
+    }
+
+    // -----------------------------------------------
+    // Render each event as a card on the page
+    // -----------------------------------------------
+    function renderEvents() {
+      var grid = document.getElementById('eventsGrid');
+      grid.innerHTML = ''; // clear first
+
+      // Get user's already registered events
+      var myKey = 'myEvents_' + user.email;
+      var myEvts = JSON.parse(localStorage.getItem(myKey) || '[]');
+      // Store just the IDs for easy checking
+      var registeredIds = myEvts.map(function(e) { return e.id; });
+
+      storedEvents.forEach(function(event) {
+        var alreadyRegistered = registeredIds.indexOf(event.id) !== -1;
+
+        // Build the HTML for one event card
+        var card = document.createElement('div');
+        card.className = 'card event-card';
+        card.innerHTML =
+          '<div class="event-dept-tag">' + event.dept + '</div>' +
+          '<h3>' + event.title + '</h3>' +
+          '<div class="event-meta">' +
+            '<span>📅 ' + formatDate(event.date) + '</span>' +
+            '<span>📍 ' + event.location + '</span>' +
+          '</div>' +
+          '<p class="event-desc">' + event.description + '</p>' +
+          (alreadyRegistered
+            ? '<button class="btn-registered" disabled>✅ Registered</button>'
+            : '<button class="btn-primary" onclick="registerEvent(' + event.id + ')">Register</button>'
+          );
+
+        grid.appendChild(card);
+      });
+    }
+
+    // -----------------------------------------------
+    // STEP 6: Register user for an event
+    // -----------------------------------------------
+    function registerEvent(eventId) {
+      // Find the event object by ID
+      var event = storedEvents.find(function(e) { return e.id === eventId; });
+
+      // Key is unique per user (so each user has their own list)
+      var myKey = 'myEvents_' + user.email;
+      var myEvts = JSON.parse(localStorage.getItem(myKey) || '[]');
+
+      // Check if already registered (safety check)
+      var alreadyIn = myEvts.find(function(e) { return e.id === eventId; });
+      if (alreadyIn) {
+        alert('You already registered for this event!');
+        return;
+      }
+
+      // Add event to user's list and save
+      myEvts.push(event);
+      localStorage.setItem(myKey, JSON.stringify(myEvts));
+
+      // Show a toast notification
+      showToast();
+
+      // Re-render so the button changes to "Registered"
+      renderEvents();
+    }
+
+    // Show the green toast popup for 2.5 seconds
+    function showToast() {
+      var toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2500);
+    }
+
+    // Format date from "2025-08-15" to "15 Aug 2025"
+    function formatDate(dateStr) {
+      var d = new Date(dateStr);
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    // Run on page load
+    renderEvents();
+  </script>
+<script src="script.js"></script>
+</body>
+</html>

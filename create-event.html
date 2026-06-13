@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Event – Campus Connect</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">🎓 Campus Connect</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="events.html">Events</a></li>
+      <li><a href="myevents.html">My Events</a></li>
+      <li><a href="create-event.html" class="active">+ Create Event</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h2>Create New Event</h2>
+      <p>Fill in the details below. The event will appear on the Events page immediately.</p>
+    </div>
+
+    <!-- CREATE EVENT FORM -->
+    <div class="form-card">
+      <div class="form-group">
+        <label>Event Title *</label>
+        <input type="text" id="evTitle" placeholder="e.g. Annual Hackathon 2025"/>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Event Date *</label>
+          <input type="date" id="evDate"/>
+        </div>
+        <div class="form-group">
+          <label>Department / Audience *</label>
+          <input type="text" id="evDept" placeholder="e.g. CSE, All Students"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Location / Venue *</label>
+        <input type="text" id="evLocation" placeholder="e.g. Main Auditorium"/>
+      </div>
+
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea id="evDesc" rows="4" placeholder="Describe the event, activities, who should attend..."></textarea>
+      </div>
+
+      <div id="createMsg" class="msg-box"></div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn-primary" onclick="createEvent()">➕ Publish Event</button>
+        <button class="btn-secondary" onclick="window.location.href='events.html'">View All Events</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var user = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!user) window.location.href = 'index.html';
+
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'index.html';
+    }
+
+    function createEvent() {
+      // Get form values
+      var title    = document.getElementById('evTitle').value.trim();
+      var date     = document.getElementById('evDate').value;
+      var dept     = document.getElementById('evDept').value.trim();
+      var location = document.getElementById('evLocation').value.trim();
+      var desc     = document.getElementById('evDesc').value.trim();
+      var msgBox   = document.getElementById('createMsg');
+
+      // Validate
+      if (!title || !date || !dept || !location || !desc) {
+        showMsg(msgBox, 'Please fill in all fields.', 'error');
+        return;
+      }
+
+      // Get current events list
+      var events = JSON.parse(localStorage.getItem('events') || '[]');
+
+      // Create a unique ID using current timestamp
+      var newEvent = {
+        id: Date.now(),   // unique number based on current time
+        title: title,
+        date: date,
+        dept: dept,
+        location: location,
+        description: desc,
+        createdBy: user.email
+      };
+
+      // Add to events array and save
+      events.push(newEvent);
+      localStorage.setItem('events', JSON.stringify(events));
+
+      showMsg(msgBox, '🎉 Event published! Redirecting to Events page...', 'success');
+
+      // Clear form fields
+      document.getElementById('evTitle').value = '';
+      document.getElementById('evDate').value = '';
+      document.getElementById('evDept').value = '';
+      document.getElementById('evLocation').value = '';
+      document.getElementById('evDesc').value = '';
+
+      // Go to events page after a short wait
+      setTimeout(function() {
+        window.location.href = 'events.html';
+      }, 1800);
+    }
+
+    function showMsg(element, text, type) {
+      element.textContent = text;
+      element.className = 'msg-box ' + type;
+    }
+  </script>
+<script src="script.js"></script>
+</body>
+</html>

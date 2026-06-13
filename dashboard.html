@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – Campus Connect</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="navbar">
+    <div class="nav-brand">🎓 Campus Connect</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html" class="active">Home</a></li>
+      <li><a href="events.html">Events</a></li>
+      <li><a href="myevents.html">My Events</a></li>
+      <li><a href="create-event.html">+ Create Event</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div>
+        <!-- User name is filled in by JavaScript -->
+        <h2 id="welcomeMsg">Welcome back! 👋</h2>
+        <p>Explore upcoming events or manage your registrations.</p>
+      </div>
+      <a href="events.html" class="btn-primary">Browse Events →</a>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="totalEvents">0</div>
+        <div class="stat-label">Total Events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="myEventsCount">0</div>
+        <div class="stat-label">My Registrations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Departments</div>
+      </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="cards-grid">
+
+      <div class="card" onclick="window.location.href='events.html'">
+        <div class="card-icon">📅</div>
+        <h3>Browse Events</h3>
+        <p>Explore all upcoming college events and register for the ones you love.</p>
+        <span class="card-link">View All Events →</span>
+      </div>
+
+      <div class="card" onclick="window.location.href='myevents.html'">
+        <div class="card-icon">🎟️</div>
+        <h3>My Events</h3>
+        <p>See all events you have registered for in one place.</p>
+        <span class="card-link">View My Events →</span>
+      </div>
+
+      <div class="card" onclick="window.location.href='create-event.html'">
+        <div class="card-icon">➕</div>
+        <h3>Create Event</h3>
+        <p>Organizer? Add a new event for students to discover and register.</p>
+        <span class="card-link">Create Now →</span>
+      </div>
+
+    </div>
+  </div><!-- end container -->
+
+  <script>
+    // Check if user is logged in – if not, send to login page
+    var user = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (!user) {
+      window.location.href = 'index.html';
+    }
+
+    // Show welcome message with user's name
+    document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + user.name + '! 👋';
+
+    // Count total events from localStorage
+    var allEvents = JSON.parse(localStorage.getItem('events') || '[]');
+    document.getElementById('totalEvents').textContent = allEvents.length;
+
+    // Count events the user registered for
+    var myKey = 'myEvents_' + user.email; // unique key per user
+    var myEvts = JSON.parse(localStorage.getItem(myKey) || '[]');
+    document.getElementById('myEventsCount').textContent = myEvts.length;
+
+    // Logout function – clears logged-in user and goes to login page
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      window.location.href = 'index.html';
+    }
+  </script>
+<script src="script.js"></script>
+</body>
+</html>
